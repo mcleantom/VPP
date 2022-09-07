@@ -6,9 +6,9 @@ from VPP.variable import Variable
 
 
 class TestVariable(TestCase):
-
     def test_standard_operations(self):
         import operator
+
         x = Variable("x", 2)
         y = Variable("y", 1)
         for operation in [operator.add, operator.sub, operator.pow, operator.mod, operator.truediv, operator.floordiv]:
@@ -23,7 +23,7 @@ class TestVariable(TestCase):
         z = Variable("z", 3)
 
         def f(x_, y_, z_):
-            return 2 * x_ ** 3 + 3 * y_ ** 2 - z_
+            return 2 * x_**3 + 3 * y_**2 - z_
 
         res1 = f(x.val, y.val, z.val)
         res2 = f(x, y, z)
