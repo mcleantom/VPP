@@ -1,24 +1,22 @@
-import typing
-from typing import Union, Callable, Optional, Any
-import warnings
-import numpy as np
-from numpy.typing import ArrayLike
-import operator
 import numbers
+import operator
+import warnings
+from typing import Any, Callable, Optional, Union
+
+import numpy as np
 
 __all__ = ["Variable"]
 
 
 class Variable:
-
     def __init__(
-            self,
-            name: str,
-            initial_guess: Any = None,
-            scale: Optional[Union[float, Callable]] = None,
-            fixed: bool = False,
-            lower_bound: Optional[float] = None,
-            upper_bound: Optional[float] = None
+        self,
+        name: str,
+        initial_guess: Any = None,
+        scale: Optional[Union[float, Callable]] = None,
+        fixed: bool = False,
+        lower_bound: Optional[float] = None,
+        upper_bound: Optional[float] = None,
     ):
         if initial_guess is None:
             initial_guess = lower_bound or 1
@@ -42,46 +40,46 @@ class Variable:
         return self.name
 
     def __add__(self, other):
-        return CombinedVariable(self, other, operator.add)
+        return CombinedVariable(self, other, operation=operator.add)
 
     def __radd__(self, other):
-        return CombinedVariable(other, self, operator.add)
+        return CombinedVariable(other, self, operation=operator.add)
 
     def __mul__(self, other):
-        return CombinedVariable(self, other, operator.mul)
+        return CombinedVariable(self, other, operation=operator.mul)
 
     def __rmul__(self, other):
-        return CombinedVariable(other, self, operator.mul)
+        return CombinedVariable(other, self, operation=operator.mul)
 
     def __truediv__(self, other):
-        return CombinedVariable(self, other, operator.truediv)
+        return CombinedVariable(self, other, operation=operator.truediv)
 
     def __rtruediv__(self, other):
-        return CombinedVariable(other, self, operator.truediv)
+        return CombinedVariable(other, self, operation=operator.truediv)
 
     def __floordiv__(self, other):
-        return CombinedVariable(self, other, operator.floordiv)
+        return CombinedVariable(self, other, operation=operator.floordiv)
 
     def __rfloordiv__(self, other):
-        return CombinedVariable(other, self, operator.floordiv)
+        return CombinedVariable(other, self, operation=operator.floordiv)
 
     def __sub__(self, other):
-        return CombinedVariable(self, other, operator.sub)
+        return CombinedVariable(self, other, operation=operator.sub)
 
     def __rsub__(self, other):
-        return CombinedVariable(other, self, operator.sub)
+        return CombinedVariable(other, self, operation=operator.sub)
 
     def __pow__(self, power, modulo=None):
-        return CombinedVariable(self, power, operator.pow)
+        return CombinedVariable(self, power, operation=operator.pow)
 
     def __rpow__(self, power, modulo=None):
-        return CombinedVariable(power, self, operator.pow)
+        return CombinedVariable(power, self, operation=operator.pow)
 
     def __mod__(self, other):
-        return CombinedVariable(self, other, operator.mod)
+        return CombinedVariable(self, other, operation=operator.mod)
 
     def __rmod__(self, other):
-        return CombinedVariable(other, self, operator.mod)
+        return CombinedVariable(other, self, operation=operator.mod)
 
     def __array__(self, *args, **kwargs):
         return np.asarray(self.val, *args, **kwargs)
@@ -102,7 +100,7 @@ class Variable:
                 return False
             return True
 
-        out = kwargs.get('out', ())
+        out = kwargs.get("out", ())
         for x in inputs + out:
             # Only support operations with instances of _HANDLED_TYPES.
             # Use ArrayLike instead of type(self) for isinstance to
@@ -129,18 +127,19 @@ class CombinedVariable(Variable):
         operator.mul: "*",
         operator.truediv: "/",
         operator.floordiv: "//",
-        operator.pow: "**"
+        operator.pow: "**",
     }
 
     def __init__(self, *inputs, operation: operator):
         self.inputs = tuple(self.convert_to_variable(i) for i in inputs)
         name = self.operator_mappings.get(operation, " " + operation.__name__ + " ").join(str(i) for i in self.inputs)
+        name = "(" + name + ")"
         super().__init__(
             name=name,
-            initial_guess=operation(*(i.val for i in inputs)),
+            initial_guess=operation(*(i.val for i in self.inputs)),
             fixed=False,
             lower_bound=None,
-            upper_bound=None
+            upper_bound=None,
         )
         self.operation = operation
 
