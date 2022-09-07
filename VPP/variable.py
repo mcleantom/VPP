@@ -35,6 +35,9 @@ class Variable:
     def __repr__(self):
         return f"<Variable {self.name} val={self.val} optimized={self.optimized} fixed={self.fixed}>"
 
+    def __str__(self):
+        return self.name
+
     def __add__(self, other):
         return CombinedVariable(self, other, operator.add)
 
@@ -86,6 +89,12 @@ class Variable:
     def __eq__(self, other):
         return self.val == other
 
+    @classmethod
+    def convert_to_variable(cls, val):
+        if not isinstance(val, Variable):
+            return Variable(str(val), val)
+        return val
+
 
 class CombinedVariable(Variable):
     operator_mappings = {
@@ -93,12 +102,15 @@ class CombinedVariable(Variable):
         operator.sub: "-",
         operator.mul: "*",
         operator.truediv: "/",
-        operator.floordiv: "//"
+        operator.floordiv: "//",
+        operator.pow: "**"
     }
 
     def __init__(self, v1: Variable, v2: Variable, operation: operator):
+        v1 = self.convert_to_variable(v1)
+        v2 = self.convert_to_variable(v2)
         super().__init__(
-            name=f"({v1.name}{self.operator_mappings.get(operation)}{v2.name})",
+            name=f"({v1}{self.operator_mappings.get(operation)}{v2})",
             initial_guess=operation(v1.val, v2.val),
             fixed=v1.fixed and v2.fixed,
             lower_bound=operation(v1.lower_bound or float("-inf"), v2.lower_bound or float("-inf")),
