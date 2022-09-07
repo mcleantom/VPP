@@ -1,7 +1,10 @@
-from typing import Union, Callable, Optional
+import typing
+from typing import Union, Callable, Optional, Any
 import warnings
 import numpy as np
+from numpy.typing import ArrayLike
 import operator
+import numbers
 
 __all__ = ["Variable"]
 
@@ -11,7 +14,7 @@ class Variable:
     def __init__(
             self,
             name: str,
-            initial_guess: float = None,
+            initial_guess: Any = None,
             scale: Optional[Union[float, Callable]] = None,
             fixed: bool = False,
             lower_bound: Optional[float] = None,
@@ -23,7 +26,7 @@ class Variable:
         self.name = name
         self.initial_guess = initial_guess
         try:
-            self.val = self.initial_guess
+            self.val = np.asarray(self.initial_guess)
         except AttributeError:  # Class implements property method for val
             pass
         self.scale = scale
@@ -81,13 +84,36 @@ class Variable:
         return CombinedVariable(other, self, operator.mod)
 
     def __array__(self, *args, **kwargs):
-        return np.array(self.val, *args, **kwargs)
+        return np.asarray(self.val, *args, **kwargs)
 
     def __float__(self):
         return float(self.val)
 
     def __eq__(self, other):
         return self.val == other
+
+    _HANDLED_TYPES = (np.ndarray, numbers.Number)
+
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
+        def is_array_like(x):
+            try:
+                np.array(x)
+            except Exception:
+                return False
+            return True
+
+        out = kwargs.get('out', ())
+        for x in inputs + out:
+            # Only support operations with instances of _HANDLED_TYPES.
+            # Use ArrayLike instead of type(self) for isinstance to
+            # allow subclasses that don't override __array_ufunc__ to
+            # handle ArrayLike objects.
+            if not is_array_like(x):
+                return NotImplemented
+
+        # Defer to the implementation of the ufunc on unwrapped values.
+        inputs = tuple(np.asarray(x) if not isinstance(x, Variable) else x for x in inputs)
+        return CombinedVariable(*inputs, operation=ufunc)
 
     @classmethod
     def convert_to_variable(cls, val):
@@ -106,20 +132,18 @@ class CombinedVariable(Variable):
         operator.pow: "**"
     }
 
-    def __init__(self, v1: Variable, v2: Variable, operation: operator):
-        v1 = self.convert_to_variable(v1)
-        v2 = self.convert_to_variable(v2)
+    def __init__(self, *inputs, operation: operator):
+        self.inputs = tuple(self.convert_to_variable(i) for i in inputs)
+        name = self.operator_mappings.get(operation, " " + operation.__name__ + " ").join(str(i) for i in self.inputs)
         super().__init__(
-            name=f"({v1}{self.operator_mappings.get(operation)}{v2})",
-            initial_guess=operation(v1.val, v2.val),
-            fixed=v1.fixed and v2.fixed,
-            lower_bound=operation(v1.lower_bound or float("-inf"), v2.lower_bound or float("-inf")),
-            upper_bound=operation(v1.upper_bound or float("inf"), v2.upper_bound or float("inf"))
+            name=name,
+            initial_guess=operation(*(i.val for i in inputs)),
+            fixed=False,
+            lower_bound=None,
+            upper_bound=None
         )
         self.operation = operation
-        self.v1 = v1
-        self.v2 = v2
 
     @property
     def val(self):
-        return self.operation(self.v1.val, self.v2.val)
+        return self.operation(*(i.val for i in self.inputs))
