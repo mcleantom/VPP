@@ -5,7 +5,7 @@ from typing import Any, Callable, Optional, Union
 
 import numpy as np
 
-__all__ = ["Variable"]
+__all__ = ["Variable", "Function"]
 
 
 class Variable:
@@ -40,46 +40,49 @@ class Variable:
         return self.name
 
     def __add__(self, other):
-        return CombinedVariable(self, other, operation=operator.add)
+        return Function(self, other, operation=operator.add)
 
     def __radd__(self, other):
-        return CombinedVariable(other, self, operation=operator.add)
+        return Function(other, self, operation=operator.add)
 
     def __mul__(self, other):
-        return CombinedVariable(self, other, operation=operator.mul)
+        return Function(self, other, operation=operator.mul)
 
     def __rmul__(self, other):
-        return CombinedVariable(other, self, operation=operator.mul)
+        return Function(other, self, operation=operator.mul)
 
     def __truediv__(self, other):
-        return CombinedVariable(self, other, operation=operator.truediv)
+        return Function(self, other, operation=operator.truediv)
 
     def __rtruediv__(self, other):
-        return CombinedVariable(other, self, operation=operator.truediv)
+        return Function(other, self, operation=operator.truediv)
 
     def __floordiv__(self, other):
-        return CombinedVariable(self, other, operation=operator.floordiv)
+        return Function(self, other, operation=operator.floordiv)
 
     def __rfloordiv__(self, other):
-        return CombinedVariable(other, self, operation=operator.floordiv)
+        return Function(other, self, operation=operator.floordiv)
 
     def __sub__(self, other):
-        return CombinedVariable(self, other, operation=operator.sub)
+        return Function(self, other, operation=operator.sub)
 
     def __rsub__(self, other):
-        return CombinedVariable(other, self, operation=operator.sub)
+        return Function(other, self, operation=operator.sub)
 
     def __pow__(self, power, modulo=None):
-        return CombinedVariable(self, power, operation=operator.pow)
+        return Function(self, power, operation=operator.pow)
 
     def __rpow__(self, power, modulo=None):
-        return CombinedVariable(power, self, operation=operator.pow)
+        return Function(power, self, operation=operator.pow)
 
     def __mod__(self, other):
-        return CombinedVariable(self, other, operation=operator.mod)
+        return Function(self, other, operation=operator.mod)
 
     def __rmod__(self, other):
-        return CombinedVariable(other, self, operation=operator.mod)
+        return Function(other, self, operation=operator.mod)
+
+    def __round__(self, n=None):
+        return Function(self, operation=round)
 
     def __array__(self, *args, **kwargs):
         return np.asarray(self.val, *args, **kwargs)
@@ -89,6 +92,9 @@ class Variable:
 
     def __eq__(self, other):
         return self.val == other
+
+    def __neg__(self):
+        return -1 * self
 
     _HANDLED_TYPES = (np.ndarray, numbers.Number)
 
@@ -111,7 +117,7 @@ class Variable:
 
         # Defer to the implementation of the ufunc on unwrapped values.
         inputs = tuple(np.asarray(x) if not isinstance(x, Variable) else x for x in inputs)
-        return CombinedVariable(*inputs, operation=ufunc)
+        return Function(*inputs, operation=ufunc)
 
     @classmethod
     def convert_to_variable(cls, val):
@@ -120,7 +126,7 @@ class Variable:
         return val
 
 
-class CombinedVariable(Variable):
+class Function(Variable):
     operator_mappings = {
         operator.add: "+",
         operator.sub: "-",
