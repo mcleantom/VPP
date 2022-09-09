@@ -15,5 +15,5 @@ class Rotation(ScipyRotation):
 
     def __eq__(self, other):
         if isinstance(other, Rotation):
-            return np.array_equal(self.as_rotvec(), other.as_rotvec())
+            return np.allclose(self.as_rotvec(), other.as_rotvec())
         raise NotImplementedError("Only implemented for comparisons between two rotations.")
