@@ -10,11 +10,6 @@ class Vector(np.ndarray):
         obj = np.asarray(input_array).view(cls)
         return obj
 
-    def __mul__(self, other):
-        if (type(self), type(other)) in mult.funcs:
-            return mult(self, other)
-        return np.multiply(self, other)
-
     def unit_vector(self):
         return self / np.linalg.norm(self)
 
