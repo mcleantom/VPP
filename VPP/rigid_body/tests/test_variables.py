@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from VPP.rigid_body.vector import Vector, Vector1D, Vector2D, Vector3D
+from VPP.rigid_body.vector import Vector1D, Vector2D, Vector3D
 
 
 class TestVectors(TestCase):
