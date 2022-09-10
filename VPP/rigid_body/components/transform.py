@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 from anytree import NodeMixin, RenderTree
 
-from VPP.rigid_body.component import Component
-from VPP.rigid_body.rotation import Rotation
+from VPP.rigid_body.components.component import Component
+from VPP.rigid_body.components.rotation import Rotation
 from VPP.rigid_body.vector import Vector, Vector3D
 
 if TYPE_CHECKING:
