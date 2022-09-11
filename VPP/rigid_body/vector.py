@@ -10,11 +10,20 @@ class Vector(np.ndarray):
         obj = np.asarray(input_array).view(cls)
         return obj
 
+    def __eq__(self, other):
+        if isinstance(other, Vector):
+            return np.all(np.isclose(other, self))
+        raise NotImplementedError("Can only compare two vectors.")
+
     def unit_vector(self):
         return self / np.linalg.norm(self)
 
     def length(self):
         return np.linalg.norm(self)
+
+    @classmethod
+    def cross(cls, vector1: Vector, vector2: Vector):
+        return Vector(np.cross(vector1, vector2))
 
 
 class Vector1D(Vector):
@@ -42,6 +51,13 @@ class Vector2D(Vector1D):
 
 
 class Vector3D(Vector2D):
+    """
+    The sign convention is:
+    +ve x towards bow
+    +ve y towards starboard
+    +ve z from keel to deck (upwards)
+    """
+
     def __new__(cls, input_array):
         obj = np.asarray(input_array).view(cls)
         if len(obj) != 3:
