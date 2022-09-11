@@ -51,6 +51,13 @@ class Vector2D(Vector1D):
 
 
 class Vector3D(Vector2D):
+    """
+    The sign convention is:
+    +ve x towards bow
+    +ve y towards starboard
+    +ve z from keel to deck (upwards)
+    """
+
     def __new__(cls, input_array):
         obj = np.asarray(input_array).view(cls)
         if len(obj) != 3:

@@ -15,9 +15,9 @@ class TestRotation(TestCase):
 
     def test_using_rotation_to_modify_vector(self):
         # Trying to work out applying rotations by hand is hard.
-        force = Vector3D([1, 0, 0])
+        pointing_towards_x_axis = Vector3D([1, 0, 0])
         rotate_z_axis = Rotation.from_rotvec([0, 0, 90], degrees=True)
-        force_rotated = rotate_z_axis.apply(force)
-        self.assertEqual(Vector3D([0, -1, 0]), force_rotated)
-        pointing_down = Rotation.from_rotvec([90, 0, 0], degrees=True)
-        self.assertEqual(Vector3D([0, 0, 1]), pointing_down.apply(force_rotated))
+        pointing_towards_port = rotate_z_axis.apply(pointing_towards_x_axis)
+        self.assertEqual(Vector3D([0, -1, 0]), pointing_towards_port)
+        pointing_upwards = Rotation.from_rotvec([90, 0, 0], degrees=True)
+        self.assertEqual(Vector3D([0, 0, 1]), pointing_upwards.apply(pointing_towards_port))
