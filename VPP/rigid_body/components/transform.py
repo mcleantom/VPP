@@ -83,19 +83,29 @@ class Transform(Component, NodeMixin):
             return self.local_rotation * self.parent.rotation
         return self.local_rotation
 
+    def transform_point(self, position: Vector3D) -> Vector3D:
+        """
+        Transforms a point from a local coordinates to world coordinates
+        """
+        return self.position + position
+
+    def transform_vector(self, vector: Vector3D) -> Vector3D:
+        """
+        Transforms a vector from local space to world space
+        """
+        return self.rotation.apply(vector)
+
     def inverse_transform_point(self, position: Vector3D) -> Vector3D:
         """
         Transforms position from world space to local space.
         """
-        raise NotImplementedError
+        return self.position - position
 
     def inverse_transform_vector(self, vector: Vector3D) -> Vector3D:
         """
         Transforms vector from world space to local space
-
-        # Note: Useful for wind vectors.
         """
-        raise NotImplementedError
+        return self.rotation.inv().apply(vector)
 
     def is_child_of(self, transform: Transform):
         """

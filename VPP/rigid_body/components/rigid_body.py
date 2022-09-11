@@ -37,14 +37,35 @@ class RigidBody(Component):
             position = self.position
         self.forces.append((force, position))
 
+    @property
+    def resultant_force(self) -> Vector3D:
+        """
+        The total force vector acting on the body, in the world reference frame.
+        """
+        return sum(x[0] for x in self.forces)
+
+    @property
+    def local_resultant_force(self) -> Vector3D:
+        """
+        The total force vector acting on the body in the local reference frame.
+        """
+        return self.object.transform.inverse_transform_vector(self.resultant_force)
+
     def add_relative_force(self, force: Vector3D, position: Vector3D = None):
         """
         A force in the local reference frame is applied to the RigidBody. If a local-coordinate position vector is
         applied, the force is applied from the position resulting in a torque and force on the RigidBody.
         """
+        if position is None:
+            position = self.position
+        # Transform the local force vectors to global force vectors
+        self.forces.append(
+            (self.object.transform.transform_vector(force), self.object.transform.transform_point(position))
+        )
 
     @property
     def weight(self) -> Vector3D:
         """
         The force of gravity = mass * gravity
         """
+        return self.mass * self.gravity_acceleration_vector
