@@ -87,7 +87,7 @@ class Transform(Component, NodeMixin):
         """
         Transforms a point from a local coordinates to world coordinates
         """
-        return self.position + position
+        return position + self.position
 
     def transform_vector(self, vector: Vector3D) -> Vector3D:
         """
@@ -99,7 +99,7 @@ class Transform(Component, NodeMixin):
         """
         Transforms position from world space to local space.
         """
-        return self.position - position
+        return position - self.position
 
     def inverse_transform_vector(self, vector: Vector3D) -> Vector3D:
         """

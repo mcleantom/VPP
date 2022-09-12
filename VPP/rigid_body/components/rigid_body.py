@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, List, Tuple
 
-from VPP.rigid_body.vector import Vector3D
+import numpy as np
+
+from VPP.rigid_body.vector import Vector, Vector3D
 from .component import Component
 
 if TYPE_CHECKING:
@@ -50,6 +52,20 @@ class RigidBody(Component):
         The total force vector acting on the body in the local reference frame.
         """
         return self.object.transform.inverse_transform_vector(self.resultant_force)
+
+    @property
+    def resultant_moment(self) -> Vector3D:
+        local_frame_forces = [
+            (self.object.transform.inverse_transform_vector(f), self.object.transform.inverse_transform_point(r))
+            for f, r in self.forces
+        ]
+        return Vector3D(
+            self.object.transform.transform_vector((np.sum([np.cross(r, f) for f, r in local_frame_forces], axis=0)))
+        )
+
+    @property
+    def local_resultant_moment(self) -> Vector3D:
+        return Vector3D(self.object.transform.inverse_transform_vector(self.resultant_moment))
 
     def add_relative_force(self, force: Vector3D, position: Vector3D = None):
         """

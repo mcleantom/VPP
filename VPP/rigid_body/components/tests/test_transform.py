@@ -32,3 +32,18 @@ class TestReferenceFrame(TestCase):
 
         self.assertTrue(np.array_equal(Vector3D([5 + 30, -5, 20]), leading_element.transform.position))
         self.assertEqual(Rotation.from_euler("xyz", [0, 0, 55]), leading_element.transform.rotation)
+
+    def test_converting_world_to_local_positions(self):
+        ship = Object("ship")
+        ship.transform.local_position = Vector3D([0, 0, -10])
+
+        # convert world space to local space
+        ten_m_above_origin = ship.transform.inverse_transform_point(Vector3D([0, 0, 10]))
+        self.assertEqual(Vector3D([0, 0, 20]), ten_m_above_origin)
+
+        # convert local space to world space
+        ship_origin_world_space = ship.transform.transform_point(Vector3D([0, 10, 0]))
+        self.assertEqual(Vector3D([0, 10, -10]), ship_origin_world_space)
+
+        test_point = Vector3D([102, -93, 4.20493028])
+        self.assertEqual(test_point, ship.transform.transform_point(ship.transform.inverse_transform_point(test_point)))
