@@ -13,7 +13,7 @@ class TestRotation(TestCase):
         E = N * rotate_90deg
         S = E * rotate_90deg
         W = S * rotate_90deg
-        self.assertEqual(N, W * rotate_90deg)
+        self.assertTrue(np.isclose(N.as_rotvec(), (W * rotate_90deg).as_rotvec()).all())
 
     def test_using_rotation_to_modify_vector(self):
         # Trying to work out applying rotations by hand is hard.
