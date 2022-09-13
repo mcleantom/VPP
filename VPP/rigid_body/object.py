@@ -15,19 +15,22 @@ __all__ = ["Object"]
 
 
 class Object:
-    def __init__(self, name: str = None, children: List[Object] = None, components: List[Type[Component]] = None):
+    def __init__(self, name: str = None, children: List[Object] = None, components: List[Component] = None):
         super().__init__()
 
         if components is None:
             components = []
 
+        self.transform = Transform()
+        self.transform.add_to_object(self)
+
         initialised_components = defaultdict(list)
-        initialised_components[Transform].append(Transform(self))
+        initialised_components[Transform].append(self.transform)
 
         for component in components:
-            initialised_components[component].append(component(self))
+            component.add_to_object(self)
+            initialised_components[type(component)].append(component)
 
-        self.transform = initialised_components[Transform][0]
         self.components = initialised_components
 
         if children is None:
@@ -41,13 +44,19 @@ class Object:
 
 
 class RigidBodyObject(Object):
-    def __init__(self, name: str, children: List[Object] = None, components: List[Type[Component]] = None):
+    def __init__(
+        self,
+        name: str,
+        rigid_body: RigidBody = RigidBody(),
+        children: List[Object] = None,
+        components: List[Type[Component]] = None,
+    ):
         """
         An Object that adds a RigidBody component by default and implements a property to access the objects RigidBody
         component
         """
         if components is None:
             components = []
-        components.append(RigidBody)
+        components.append(rigid_body)
         super().__init__(name, children, components)
-        self.rigid_body: RigidBody = self.get_component(RigidBody)
+        self.rigid_body = rigid_body

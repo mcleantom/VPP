@@ -14,12 +14,12 @@ else:
 class RigidBody(Component):
     gravity_acceleration_vector: Vector3D = Vector3D([0, 0, 9.81])
 
-    def __init__(self, vpp_object: Object):
+    def __init__(self, mass: float = 0):
         """
         Adding a RigidBody component to an object will allow the object to apply forces and moments in the VPP.
         """
-        super().__init__(vpp_object)
-        self.mass = 0
+        super().__init__()
+        self.mass = mass
         self.forces: List[
             Tuple[Vector3D, Vector3D]
         ] = []  # A list of forces and their positions in a local reference frame
