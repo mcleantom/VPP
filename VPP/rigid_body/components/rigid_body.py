@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, List, Tuple
 
 import numpy as np
 
-from VPP.rigid_body.vector import Vector, Vector3D
+from VPP.rigid_body.vector import Vector3D
 from .component import Component
 
 if TYPE_CHECKING:
@@ -20,7 +20,9 @@ class RigidBody(Component):
         """
         super().__init__(vpp_object)
         self.mass = 0
-        self.forces: List[Tuple[Vector3D, Vector3D]] = []
+        self.forces: List[
+            Tuple[Vector3D, Vector3D]
+        ] = []  # A list of forces and their positions in a local reference frame
 
     @property
     def position(self) -> Vector3D:
@@ -37,6 +39,8 @@ class RigidBody(Component):
         """
         if position is None:
             position = self.position
+        position = self.object.transform.inverse_transform_point(position)
+        force = self.object.transform.inverse_transform_vector(force)
         self.forces.append((force, position))
 
     @property
@@ -44,28 +48,22 @@ class RigidBody(Component):
         """
         The total force vector acting on the body, in the world reference frame.
         """
-        return sum(x[0] for x in self.forces)
+        return Vector3D(self.object.transform.transform_vector(self.local_resultant_force))
 
     @property
     def local_resultant_force(self) -> Vector3D:
         """
         The total force vector acting on the body in the local reference frame.
         """
-        return self.object.transform.inverse_transform_vector(self.resultant_force)
+        return Vector3D(sum(x[0] for x in self.forces))
 
     @property
     def resultant_moment(self) -> Vector3D:
-        local_frame_forces = [
-            (self.object.transform.inverse_transform_vector(f), self.object.transform.inverse_transform_point(r))
-            for f, r in self.forces
-        ]
-        return Vector3D(
-            self.object.transform.transform_vector((np.sum([np.cross(r, f) for f, r in local_frame_forces], axis=0)))
-        )
+        return Vector3D(self.object.transform.transform_vector(self.local_resultant_moment))
 
     @property
     def local_resultant_moment(self) -> Vector3D:
-        return Vector3D(self.object.transform.inverse_transform_vector(self.resultant_moment))
+        return Vector3D((np.sum([np.cross(r, f) for f, r in self.forces], axis=0)))
 
     def add_relative_force(self, force: Vector3D, position: Vector3D = None):
         """
@@ -74,10 +72,7 @@ class RigidBody(Component):
         """
         if position is None:
             position = self.position
-        # Transform the local force vectors to global force vectors
-        self.forces.append(
-            (self.object.transform.transform_vector(force), self.object.transform.transform_point(position))
-        )
+        self.forces.append((force, position))
 
     @property
     def weight(self) -> Vector3D:
