@@ -29,6 +29,15 @@ class Transform(Component, NodeMixin):
         """
         Every object in a VPP has a Transform. It's used to store and manipulate the position and rotation of the object.
         Every transform can have a parent, which allows you to apply position and rotation hierarchically.
+
+        The transform follows a right-hand coordinate system [1]
+            +ve x is towards the bow
+            +ve y is towards port
+            +ve z is upwards (from keel to deck)
+
+        Rotations are defined following the right-hand rule for curve orientation
+
+        [1] https://en.wikipedia.org/wiki/Right-hand_rule#:~:text=Coordinates%20are%20usually%20right%2Dhanded,the%20system%20is%20counter%2Dclockwise.
         """
         super().__init__(vpp_object)
         self.local_position = local_position
@@ -70,7 +79,7 @@ class Transform(Component, NodeMixin):
         The world space position of the Transform.
         """
         if not self.is_root:
-            return np.add(self.local_position, self.parent.position)
+            return Vector3D(np.add(self.local_position, self.parent.position))
         return self.local_position
 
     @property
@@ -83,19 +92,29 @@ class Transform(Component, NodeMixin):
             return self.local_rotation * self.parent.rotation
         return self.local_rotation
 
+    def transform_point(self, position: Vector3D) -> Vector3D:
+        """
+        Transforms a point from a local coordinates to world coordinates
+        """
+        return position + self.position
+
+    def transform_vector(self, vector: Vector3D) -> Vector3D:
+        """
+        Transforms a vector from local space to world space
+        """
+        return Vector3D(self.rotation.apply(vector).flatten())
+
     def inverse_transform_point(self, position: Vector3D) -> Vector3D:
         """
         Transforms position from world space to local space.
         """
-        raise NotImplementedError
+        return position - self.position
 
     def inverse_transform_vector(self, vector: Vector3D) -> Vector3D:
         """
         Transforms vector from world space to local space
-
-        # Note: Useful for wind vectors.
         """
-        raise NotImplementedError
+        return Vector3D(self.rotation.inv().apply(vector).flatten())
 
     def is_child_of(self, transform: Transform):
         """

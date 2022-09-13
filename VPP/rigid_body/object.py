@@ -50,4 +50,4 @@ class RigidBodyObject(Object):
             components = []
         components.append(RigidBody)
         super().__init__(name, children, components)
-        self.rigid_body = self.get_component(RigidBody)
+        self.rigid_body: RigidBody = self.get_component(RigidBody)
