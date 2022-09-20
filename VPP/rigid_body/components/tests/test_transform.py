@@ -2,10 +2,9 @@ from unittest import TestCase
 
 import numpy as np
 
+from VPP.math.vector import Vector3D
 from VPP.rigid_body.components.rotation import Rotation
-from VPP.rigid_body.components.transform import Transform
 from VPP.rigid_body.object import Object
-from VPP.rigid_body.vector import Vector3D
 
 
 class TestReferenceFrame(TestCase):

@@ -7,8 +7,11 @@ else:
 
 
 class Component:
-    def __init__(self, vpp_object: Object):
+    def __init__(self):
         """
         Base class for everything attached to an object
         """
+        self.object = None
+
+    def add_to_object(self, vpp_object: Object):
         self.object = vpp_object

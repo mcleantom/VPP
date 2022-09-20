@@ -1,8 +1,8 @@
 from unittest import TestCase
 
+from VPP.math.vector import Vector3D
 from VPP.rigid_body.components.rotation import Rotation
 from VPP.rigid_body.object import RigidBodyObject
-from VPP.rigid_body.vector import Vector3D
 
 
 class TestRigidBody(TestCase):

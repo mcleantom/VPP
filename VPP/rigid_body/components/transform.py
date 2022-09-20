@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 from anytree import NodeMixin, RenderTree
 
+from VPP.math.vector import Vector, Vector3D
 from VPP.rigid_body.components.component import Component
 from VPP.rigid_body.components.rotation import Rotation
-from VPP.rigid_body.vector import Vector, Vector3D
 
 if TYPE_CHECKING:
     from VPP.rigid_body.object import Object
@@ -22,7 +22,6 @@ class Transform(Component, NodeMixin):
 
     def __init__(
         self,
-        vpp_object: Object,
         local_rotation: Rotation = Rotation.from_euler("x", [0]),
         local_position: Vector3D = Vector3D([0, 0, 0]),
     ):
@@ -39,7 +38,7 @@ class Transform(Component, NodeMixin):
 
         [1] https://en.wikipedia.org/wiki/Right-hand_rule#:~:text=Coordinates%20are%20usually%20right%2Dhanded,the%20system%20is%20counter%2Dclockwise.
         """
-        super().__init__(vpp_object)
+        super().__init__()
         self.local_position = local_position
         self.local_rotation = local_rotation
 
