@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, List, Tuple
 
 import numpy as np
 
-from VPP.rigid_body.vector import Vector3D
+from VPP.math.vector import Vector3D
 from .component import Component
 
 if TYPE_CHECKING:
@@ -14,12 +14,12 @@ else:
 class RigidBody(Component):
     gravity_acceleration_vector: Vector3D = Vector3D([0, 0, 9.81])
 
-    def __init__(self, mass: float = 0):
+    def __init__(self):
         """
         Adding a RigidBody component to an object will allow the object to apply forces and moments in the VPP.
         """
         super().__init__()
-        self.mass = mass
+        self.mass = 0
         self.forces: List[
             Tuple[Vector3D, Vector3D]
         ] = []  # A list of forces and their positions in a local reference frame
@@ -73,6 +73,9 @@ class RigidBody(Component):
         if position is None:
             position = self.position
         self.forces.append((force, position))
+
+    def add_relative_moment(self, moment: Vector3D):
+        ...
 
     @property
     def weight(self) -> Vector3D:

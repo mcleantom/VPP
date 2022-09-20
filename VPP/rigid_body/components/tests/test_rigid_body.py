@@ -1,10 +1,8 @@
 from unittest import TestCase
 
-import numpy as np
-
+from VPP.math.vector import Vector3D
 from VPP.rigid_body.components.rotation import Rotation
 from VPP.rigid_body.object import RigidBodyObject
-from VPP.rigid_body.vector import Vector3D
 
 
 class TestRigidBody(TestCase):
@@ -48,7 +46,7 @@ class TestRigidBody(TestCase):
     def test_moments_2(self):
         ship = RigidBodyObject("ship")
         ship.rigid_body.add_force(Vector3D([0, 0, 1]), Vector3D([0, 0, 10]))
-        self.assertTrue(np.isclose(Vector3D([0, 0, 0]), ship.rigid_body.resultant_moment).all())
+        self.assertEqual(Vector3D([0, 0, 0]), ship.rigid_body.resultant_moment)
 
         ship.rigid_body.add_force(Vector3D([1, 0, 0]), Vector3D([0, 10, 10]))
-        self.assertTrue(np.isclose(Vector3D([0, 10, -10]), ship.rigid_body.resultant_moment).all())
+        self.assertEqual(Vector3D([0, 10, -10]), ship.rigid_body.resultant_moment)

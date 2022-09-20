@@ -8,11 +8,10 @@ else:
 
 class Component:
     def __init__(self):
+        """
+        Base class for everything attached to an object
+        """
         self.object = None
 
     def add_to_object(self, vpp_object: Object):
-        """
-        Used by the object class to reference itself when a component is listed in the components parameter of the
-        Object initializer.
-        """
         self.object = vpp_object

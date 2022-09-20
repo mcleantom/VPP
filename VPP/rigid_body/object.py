@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import TYPE_CHECKING, List, Type, Union
+from typing import TYPE_CHECKING, Dict, List, Type, Union
 
 from VPP.rigid_body.components.rigid_body import RigidBody
 from VPP.rigid_body.components.transform import Transform
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 else:
     Component = None
 
-__all__ = ["Object"]
+__all__ = ["Object", "RigidBodyObject"]
 
 
 class Object:
@@ -31,6 +31,7 @@ class Object:
             component.add_to_object(self)
             initialised_components[type(component)].append(component)
 
+        self.transform = initialised_components[Transform][0]
         self.components = initialised_components
 
         if children is None:
@@ -42,14 +43,13 @@ class Object:
     def get_component(self, component: Type[Component]) -> Union[Component, None]:
         return next(iter(self.components[component]), None)
 
+    def get_components(self, component: Type[Component]) -> List[Component]:
+        return self.components[component]
+
 
 class RigidBodyObject(Object):
     def __init__(
-        self,
-        name: str,
-        rigid_body: RigidBody = RigidBody(),
-        children: List[Object] = None,
-        components: List[Type[Component]] = None,
+        self, name: str, children: List[Object] = None, components: List[Component] = None, rigid_body: RigidBody = None
     ):
         """
         An Object that adds a RigidBody component by default and implements a property to access the objects RigidBody
@@ -57,6 +57,9 @@ class RigidBodyObject(Object):
         """
         if components is None:
             components = []
-        components.append(rigid_body)
-        super().__init__(name, children, components)
+        if rigid_body is None:
+            rigid_body = RigidBody()
         self.rigid_body = rigid_body
+        self.rigid_body.add_to_object(self)
+        components.append(self.rigid_body)
+        super().__init__(name, children, components)
